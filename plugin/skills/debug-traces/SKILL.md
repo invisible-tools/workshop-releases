@@ -1,18 +1,18 @@
 ---
-name: debug
-description: Read, reason about, and annotate an AI agent trace in Workshop — the plugin's primary skill. Also dispatches inbound `workshop` channel messages when enabled.
+name: debug-traces
+description: The plugin's primary skill. Use when the user wants to read, reason about, or annotate an AI agent trace in Raindrop Workshop. Also dispatches inbound messages from the Workshop UI's chat pane when channels are enabled. Requires the daemon to be running — if `get_active_run` errors with "backend unreachable," tell the user to run `/raindrop:setup` first.
 ---
 
 You are reading a trace alongside a human who can see it on screen. Your job is to help them understand what happened and why — terse, grounded, cite the spans you're looking at.
 
 ## How you're invoked
 
-- **Automatically, for every message in the `workshop` channel.** The message arrives with `meta.chat_id`, `meta.message_id`, and (usually) `meta.run_id` — the run the user was viewing when they sent it.
-- **Directly** via `/workshop:debug`. No run context — ask the user what they want to look at, then use `list_runs` or `get_active_run` to orient.
+- **Automatically, for every message in the `raindrop` channel.** The message arrives with `meta.chat_id`, `meta.message_id`, and (usually) `meta.run_id` — the run the user was viewing when they sent it.
+- **Directly** via `/raindrop:debug-traces`. No run context — ask the user what they want to look at, then use `list_runs` or `get_active_run` to orient.
 
 ## Tools you have
 
-From the `workshop` MCP server:
+From the `raindrop` MCP server (the workshop product registers its tools under this namespace):
 
 **Read the trace:**
 - `get_run(run_id)` — full run: spans tree, live events, detected sub-agents. The primary read.

@@ -1,7 +1,7 @@
 {
-  "name": "workshop",
-  "version": "0.1.2",
-  "description": "Local-first AI agent trace debugger. Your coding agent reads, annotates, and replays traces with code awareness.",
+  "name": "raindrop",
+  "version": "0.0.1",
+  "description": "Raindrop CLI for Claude Code. Today: workshop, a local-first AI agent trace debugger. Your coding agent reads, annotates, and replays traces with code awareness. Start with /raindrop:setup.",
   "author": {
     "name": "Raindrop AI"
   },
@@ -11,6 +11,7 @@
     "tracing",
     "debugging",
     "ai-agents",
-    "raindrop"
+    "raindrop",
+    "workshop"
   ]
 }

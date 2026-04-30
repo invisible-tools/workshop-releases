@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
-# install.sh — installs Workshop into ~/.workshop/bin/workshop.
+# install.sh — installs `raindrop` into ~/.raindrop/bin/raindrop.
 #
 # Pulled by users via:
 #   curl -fsSL https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/install.sh | bash -s -- --channel=beta
-# (Once we own workshop.dev, both URLs above will move to https://workshop.dev/install.sh.)
+# (Once we own a brand-aligned domain, the URL above will move.)
 #
-# Design notes (matches docs/specs/2026-04-29-packaging-design.md):
-#   - Reads the manifest from $WORKSHOP_MANIFEST_URL
+# Naming: the binary is `raindrop` because it's the umbrella CLI for raindrop
+# tooling. The local-debugger product underneath is `workshop`, accessed via
+# `raindrop workshop <verb>`. Today workshop is the only product, but the
+# install path is forward-compatible with multi-product raindrop tooling.
+#
+# Design notes (mirrors docs/specs/2026-04-29-packaging-design.md):
+#   - Reads the manifest from $RAINDROP_MANIFEST_URL
 #     (default: raw.githubusercontent.com/invisible-tools/workshop-releases/main/latest.json)
-#   - Picks the entry for $WORKSHOP_CHANNEL (default stable)
+#   - Picks the entry for $RAINDROP_CHANNEL (default stable)
 #   - Downloads the platform-appropriate binary to a temp file
 #   - Verifies sha256 against the manifest
-#   - Atomically renames into ~/.workshop/bin/workshop
+#   - Atomically renames into ~/.raindrop/bin/raindrop
 #   - Critically: uses curl, NOT a browser/AirDrop/email — so the binary
 #     does NOT carry the com.apple.quarantine xattr, so Gatekeeper does not
 #     enforce notarization. Ad-hoc signing alone is sufficient.
@@ -25,34 +30,33 @@ set -euo pipefail
 # fall back to beta with a clear message instead of failing dead. Explicit
 # requests still fail loud — if a customer asked for stable and we don't
 # have one, that's a real signal, not something to paper over.
-if [ -n "${WORKSHOP_CHANNEL+x}" ]; then
-  WORKSHOP_CHANNEL_EXPLICIT=1
+if [ -n "${RAINDROP_CHANNEL+x}" ]; then
+  RAINDROP_CHANNEL_EXPLICIT=1
 else
-  WORKSHOP_CHANNEL_EXPLICIT=0
+  RAINDROP_CHANNEL_EXPLICIT=0
 fi
-WORKSHOP_CHANNEL="${WORKSHOP_CHANNEL:-stable}"
+RAINDROP_CHANNEL="${RAINDROP_CHANNEL:-stable}"
 # Manifest URL: served from main of the releases repo via raw.githubusercontent.
 # release.yml commits a fresh latest.json there on every release, so this URL
-# always works regardless of channel/prerelease semantics. When we own
-# workshop.dev, swap this default to https://workshop.dev/latest.json.
-WORKSHOP_MANIFEST_URL="${WORKSHOP_MANIFEST_URL:-https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/latest.json}"
-WORKSHOP_INSTALL_DIR="${WORKSHOP_INSTALL_DIR:-$HOME/.workshop/bin}"
+# always works regardless of channel/prerelease semantics.
+RAINDROP_MANIFEST_URL="${RAINDROP_MANIFEST_URL:-https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/latest.json}"
+RAINDROP_INSTALL_DIR="${RAINDROP_INSTALL_DIR:-$HOME/.raindrop/bin}"
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --channel=*) WORKSHOP_CHANNEL="${1#*=}"; WORKSHOP_CHANNEL_EXPLICIT=1 ;;
-    --channel) shift; WORKSHOP_CHANNEL="$1"; WORKSHOP_CHANNEL_EXPLICIT=1 ;;
-    --manifest=*) WORKSHOP_MANIFEST_URL="${1#*=}" ;;
-    --install-dir=*) WORKSHOP_INSTALL_DIR="${1#*=}" ;;
+    --channel=*) RAINDROP_CHANNEL="${1#*=}"; RAINDROP_CHANNEL_EXPLICIT=1 ;;
+    --channel) shift; RAINDROP_CHANNEL="$1"; RAINDROP_CHANNEL_EXPLICIT=1 ;;
+    --manifest=*) RAINDROP_MANIFEST_URL="${1#*=}" ;;
+    --install-dir=*) RAINDROP_INSTALL_DIR="${1#*=}" ;;
     -h|--help)
       cat <<'USAGE'
 Usage: install.sh [--channel=stable|beta] [--manifest=URL] [--install-dir=DIR]
 
 Environment overrides:
-  WORKSHOP_CHANNEL         stable | beta            (default: stable)
-  WORKSHOP_MANIFEST_URL    URL of latest.json
+  RAINDROP_CHANNEL         stable | beta            (default: stable)
+  RAINDROP_MANIFEST_URL    URL of latest.json
                            (default: https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/latest.json)
-  WORKSHOP_INSTALL_DIR     install dir              (default: ~/.workshop/bin)
+  RAINDROP_INSTALL_DIR     install dir              (default: ~/.raindrop/bin)
 USAGE
       exit 0
       ;;
@@ -64,8 +68,8 @@ USAGE
   shift
 done
 
-if [ "$WORKSHOP_CHANNEL" != "stable" ] && [ "$WORKSHOP_CHANNEL" != "beta" ]; then
-  echo "Invalid channel: $WORKSHOP_CHANNEL (expected stable|beta)" >&2
+if [ "$RAINDROP_CHANNEL" != "stable" ] && [ "$RAINDROP_CHANNEL" != "beta" ]; then
+  echo "Invalid channel: $RAINDROP_CHANNEL (expected stable|beta)" >&2
   exit 2
 fi
 
@@ -87,17 +91,17 @@ detect_platform() {
 }
 
 PLATFORM="$(detect_platform)"
-echo "[install] platform=$PLATFORM channel=$WORKSHOP_CHANNEL"
+echo "[install] platform=$PLATFORM channel=$RAINDROP_CHANNEL"
 
 # ── Tooling: prefer curl, fall back to wget ──────────────────
 need() { command -v "$1" >/dev/null 2>&1; }
 
 fetch() {
   # fetch <url> <out-path>
-  # Production: hard-pin to https + tls1.2+. Set WORKSHOP_INSECURE_PROTO=1 only
+  # Production: hard-pin to https + tls1.2+. Set RAINDROP_INSECURE_PROTO=1 only
   # in tests against a local HTTP server.
   if need curl; then
-    if [ "${WORKSHOP_INSECURE_PROTO:-0}" = "1" ]; then
+    if [ "${RAINDROP_INSECURE_PROTO:-0}" = "1" ]; then
       curl -fsSL -o "$2" "$1"
     else
       curl -fsSL --proto '=https' --tlsv1.2 -o "$2" "$1"
@@ -122,12 +126,12 @@ sha256_of() {
 }
 
 # ── Read manifest ────────────────────────────────────────────
-TMP_DIR="$(mktemp -d -t workshop-install-XXXXXX)"
+TMP_DIR="$(mktemp -d -t raindrop-install-XXXXXX)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 MANIFEST="$TMP_DIR/manifest.json"
-echo "[install] fetching manifest: $WORKSHOP_MANIFEST_URL"
-fetch "$WORKSHOP_MANIFEST_URL" "$MANIFEST"
+echo "[install] fetching manifest: $RAINDROP_MANIFEST_URL"
+fetch "$RAINDROP_MANIFEST_URL" "$MANIFEST"
 
 # Tiny JSON parser via python3 (preinstalled on macOS+most Linux).
 # We parse two strings (url, sha256) and one int (size). No jq dep.
@@ -135,7 +139,7 @@ parse_field() {
   python3 -c "
 import json, sys
 m = json.load(open('$MANIFEST'))
-ch = m.get('$WORKSHOP_CHANNEL') or {}
+ch = m.get('$RAINDROP_CHANNEL') or {}
 plats = ch.get('platforms') or {}
 entry = plats.get('$PLATFORM') or {}
 print(entry.get('$1') or '')
@@ -143,7 +147,7 @@ print(entry.get('$1') or '')
 }
 
 read_version() {
-  python3 -c "import json; print(json.load(open('$MANIFEST')).get('$WORKSHOP_CHANNEL', {}).get('version', ''))"
+  python3 -c "import json; print(json.load(open('$MANIFEST')).get('$RAINDROP_CHANNEL', {}).get('version', ''))"
 }
 
 VERSION="$(read_version)"
@@ -154,11 +158,11 @@ EXPECTED_SIZE="$(parse_field size)"
 # Implicit-default fallback: if the user didn't ask for a specific channel
 # and the default (stable) has no entry for this platform, try beta before
 # bailing. Keeps `curl … | bash` working in early-stage projects that ship
-# only betas. See the WORKSHOP_CHANNEL_EXPLICIT comment block above.
+# only betas. See the RAINDROP_CHANNEL_EXPLICIT comment block above.
 if [ -z "$URL" ] || [ -z "$EXPECTED_SHA" ] || [ -z "$EXPECTED_SIZE" ]; then
-  if [ "$WORKSHOP_CHANNEL_EXPLICIT" = "0" ] && [ "$WORKSHOP_CHANNEL" = "stable" ]; then
+  if [ "$RAINDROP_CHANNEL_EXPLICIT" = "0" ] && [ "$RAINDROP_CHANNEL" = "stable" ]; then
     echo "[install] no stable release published yet — falling back to beta channel"
-    WORKSHOP_CHANNEL=beta
+    RAINDROP_CHANNEL=beta
     VERSION="$(read_version)"
     URL="$(parse_field url)"
     EXPECTED_SHA="$(parse_field sha256)"
@@ -167,7 +171,7 @@ if [ -z "$URL" ] || [ -z "$EXPECTED_SHA" ] || [ -z "$EXPECTED_SIZE" ]; then
 fi
 
 if [ -z "$URL" ] || [ -z "$EXPECTED_SHA" ] || [ -z "$EXPECTED_SIZE" ]; then
-  echo "[install] manifest missing entry for channel=$WORKSHOP_CHANNEL platform=$PLATFORM" >&2
+  echo "[install] manifest missing entry for channel=$RAINDROP_CHANNEL platform=$PLATFORM" >&2
   exit 1
 fi
 
@@ -176,7 +180,7 @@ echo "[install] url=$URL"
 echo "[install] expected sha256=$EXPECTED_SHA"
 
 # ── Download + verify ────────────────────────────────────────
-DOWNLOAD="$TMP_DIR/workshop"
+DOWNLOAD="$TMP_DIR/raindrop"
 echo "[install] downloading..."
 fetch "$URL" "$DOWNLOAD"
 
@@ -194,15 +198,15 @@ if [ "$ACTUAL_SIZE" != "$EXPECTED_SIZE" ]; then
 fi
 
 # ── Install atomically ───────────────────────────────────────
-mkdir -p "$WORKSHOP_INSTALL_DIR"
+mkdir -p "$RAINDROP_INSTALL_DIR"
 chmod +x "$DOWNLOAD"
 
-DEST="$WORKSHOP_INSTALL_DIR/workshop"
+DEST="$RAINDROP_INSTALL_DIR/raindrop"
 if [ "$PLATFORM" = "windows-x64" ]; then
   DEST="${DEST}.exe"
 fi
 
-# Atomic rename. If a previous binary exists, keep it as workshop.prev for rollback.
+# Atomic rename. If a previous binary exists, keep it as raindrop.prev for rollback.
 if [ -e "$DEST" ]; then
   mv -f "$DEST" "${DEST}.prev" || true
 fi
@@ -215,31 +219,32 @@ echo "[install] installed: $DEST"
 # Pick the bare command if it's already on PATH, else the full path,
 # so copy-paste works either way.
 case ":$PATH:" in
-  *":$WORKSHOP_INSTALL_DIR:"*) CMD="workshop" ;;
+  *":$RAINDROP_INSTALL_DIR:"*) CMD="raindrop" ;;
   *) CMD="$DEST" ;;
 esac
 
 echo ""
-echo "  Workshop $VERSION is installed."
+echo "  Raindrop $VERSION is installed."
 echo ""
-echo "  Start the daemon (runs in the background):"
-echo "      $CMD start"
+echo "  In a project that uses @raindrop-ai/* SDKs, bootstrap it:"
+echo "      $CMD workshop init"
 echo ""
-echo "  Then open the UI:"
-echo "      http://localhost:5899"
+echo "  This writes RAINDROP_LOCAL_DEBUGGER into ./.env, starts the daemon,"
+echo "  and opens the UI at http://localhost:5899."
 echo ""
-echo "  Other commands:"
-echo "      $CMD status   # check whether it's running"
-echo "      $CMD stop     # stop the daemon"
+echo "  Already-bootstrapped projects:"
+echo "      $CMD workshop          # start daemon + open UI"
+echo "      $CMD workshop status   # check whether it's running"
+echo "      $CMD workshop stop     # stop the daemon"
 echo ""
 
 # Path hint goes last so it doesn't bury the actual call-to-action.
 case ":$PATH:" in
-  *":$WORKSHOP_INSTALL_DIR:"*) ;;
+  *":$RAINDROP_INSTALL_DIR:"*) ;;
   *)
     SHELL_NAME="$(basename "${SHELL:-bash}")"
-    HINT="export PATH=\"$WORKSHOP_INSTALL_DIR:\$PATH\""
-    echo "  To use 'workshop' as a bare command, add this to your ~/.${SHELL_NAME}rc:"
+    HINT="export PATH=\"$RAINDROP_INSTALL_DIR:\$PATH\""
+    echo "  To use 'raindrop' as a bare command, add this to your ~/.${SHELL_NAME}rc:"
     echo "      $HINT"
     echo ""
     ;;
