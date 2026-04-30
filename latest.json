@@ -5,27 +5,27 @@
     "platforms": {
       "darwin-arm64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.1.0-beta1/workshop-bun-darwin-arm64",
-        "sha256": "fbd6bf8b883a7148122a9d3ded9179a9c8caa26d6877a1469a5d440a5b34b34e",
+        "sha256": "1d0f125bbb8aa1645517a812616b3fb431c3729a9d39fdc8012e2d83b68f87ec",
         "size": 81928480
       },
       "darwin-x64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.1.0-beta1/workshop-bun-darwin-x64",
-        "sha256": "f0c7da8a7a0ada80d90949b301a6e6be5c73c9c440b4a152754f0d0f2f67c6dd",
+        "sha256": "699168846bdbfdca798cdcaececc277f28f850510ec77e96d6560216255ee670",
         "size": 87129232
       },
       "linux-x64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.1.0-beta1/workshop-bun-linux-x64",
-        "sha256": "ed179da628c2306a121229b69b66d832da75c83b83be84ddca853deb28a2b57a",
+        "sha256": "8bf48350bc9df5ca6171567195b66f4e618a4f522c08488135c73f9b5b15c693",
         "size": 120539456
       },
       "linux-arm64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.1.0-beta1/workshop-bun-linux-arm64",
-        "sha256": "d7ad56f9706aa5e748b6207b77b7a78e4e001a82a2127804c26994a26f3bd056",
+        "sha256": "04c791ed75f4bbce1d6ace37e827f3f65cbfd05e4c9c3b4719455e706a161d07",
         "size": 120064320
       },
       "windows-x64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.1.0-beta1/workshop-bun-windows-x64.exe",
-        "sha256": "e00989a63f775d1e94ede43c4d2877419d683a62288e596f3ef0a79e3c56ea01",
+        "sha256": "c7a0ead4b64db3c2662ebccbda692823c80277b654bc2c065b74504afa0d4fc0",
         "size": 136366080
       }
     }
