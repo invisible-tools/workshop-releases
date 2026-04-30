@@ -239,13 +239,41 @@ echo "      $CMD workshop stop     # stop the daemon"
 echo ""
 
 # Path hint goes last so it doesn't bury the actual call-to-action.
+# We emit a one-liner the user can copy-paste rather than asking them
+# to hand-edit their rc file. Single-quoted echo body keeps $HOME/$PATH
+# literal in the file so the rc snippet is portable across machines.
 case ":$PATH:" in
   *":$RAINDROP_INSTALL_DIR:"*) ;;
   *)
+    case "$RAINDROP_INSTALL_DIR" in
+      "$HOME"/*) PATH_LITERAL="\$HOME/${RAINDROP_INSTALL_DIR#$HOME/}" ;;
+      *)         PATH_LITERAL="$RAINDROP_INSTALL_DIR" ;;
+    esac
+
     SHELL_NAME="$(basename "${SHELL:-bash}")"
-    HINT="export PATH=\"$RAINDROP_INSTALL_DIR:\$PATH\""
-    echo "  To use 'raindrop' as a bare command, add this to your ~/.${SHELL_NAME}rc:"
-    echo "      $HINT"
+    case "$SHELL_NAME" in
+      fish)
+        RC_FILE="~/.config/fish/config.fish"
+        ADD_CMD="fish_add_path $PATH_LITERAL"
+        ;;
+      zsh)
+        RC_FILE="~/.zshrc"
+        ADD_CMD="echo 'export PATH=\"$PATH_LITERAL:\$PATH\"' >> $RC_FILE"
+        ;;
+      bash)
+        RC_FILE="~/.bashrc"
+        ADD_CMD="echo 'export PATH=\"$PATH_LITERAL:\$PATH\"' >> $RC_FILE"
+        ;;
+      *)
+        RC_FILE="~/.${SHELL_NAME}rc"
+        ADD_CMD="echo 'export PATH=\"$PATH_LITERAL:\$PATH\"' >> $RC_FILE"
+        ;;
+    esac
+
+    echo "  To put 'raindrop' on your PATH, run:"
+    echo "      $ADD_CMD"
+    echo ""
+    echo "  Then open a new shell, or run 'source $RC_FILE'."
     echo ""
     ;;
 esac
