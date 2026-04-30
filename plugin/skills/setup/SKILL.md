@@ -72,7 +72,7 @@ If the user wants it, tell them:
 > In a **new terminal** (this session is already attached to one stdio, it can't also be the channel), run:
 >
 > ```
-> claude --dangerously-load-development-channels plugin:raindrop@raindrop
+> claude --dangerously-load-development-channels plugin:raindrop@workshop
 > ```
 >
 > If that errors with "plugin not found," use the bare-server form:

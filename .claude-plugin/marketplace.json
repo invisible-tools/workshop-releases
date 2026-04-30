@@ -1,15 +1,15 @@
 {
-  "name": "raindrop",
+  "name": "workshop",
   "owner": {
     "name": "Raindrop AI"
   },
   "description": "Raindrop's local-first AI agent debugging tools.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "plugins": [
     {
       "name": "raindrop",
       "source": "./plugin",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "description": "Local-first AI agent trace debugger (raindrop workshop). Reads, annotates, and replays traces with code awareness."
     }
   ]
