@@ -19,6 +19,17 @@
 
 set -euo pipefail
 
+# Track whether the channel was set explicitly (env var or --channel flag).
+# If the user took the default and it turns out the manifest has no entry
+# for that channel (e.g. early-stage repo with only betas published), we
+# fall back to beta with a clear message instead of failing dead. Explicit
+# requests still fail loud — if a customer asked for stable and we don't
+# have one, that's a real signal, not something to paper over.
+if [ -n "${WORKSHOP_CHANNEL+x}" ]; then
+  WORKSHOP_CHANNEL_EXPLICIT=1
+else
+  WORKSHOP_CHANNEL_EXPLICIT=0
+fi
 WORKSHOP_CHANNEL="${WORKSHOP_CHANNEL:-stable}"
 # Manifest URL: served from main of the releases repo via raw.githubusercontent.
 # release.yml commits a fresh latest.json there on every release, so this URL
@@ -29,8 +40,8 @@ WORKSHOP_INSTALL_DIR="${WORKSHOP_INSTALL_DIR:-$HOME/.workshop/bin}"
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --channel=*) WORKSHOP_CHANNEL="${1#*=}" ;;
-    --channel) shift; WORKSHOP_CHANNEL="$1" ;;
+    --channel=*) WORKSHOP_CHANNEL="${1#*=}"; WORKSHOP_CHANNEL_EXPLICIT=1 ;;
+    --channel) shift; WORKSHOP_CHANNEL="$1"; WORKSHOP_CHANNEL_EXPLICIT=1 ;;
     --manifest=*) WORKSHOP_MANIFEST_URL="${1#*=}" ;;
     --install-dir=*) WORKSHOP_INSTALL_DIR="${1#*=}" ;;
     -h|--help)
@@ -131,10 +142,29 @@ print(entry.get('$1') or '')
 "
 }
 
-VERSION="$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('$WORKSHOP_CHANNEL', {}).get('version', ''))")"
+read_version() {
+  python3 -c "import json; print(json.load(open('$MANIFEST')).get('$WORKSHOP_CHANNEL', {}).get('version', ''))"
+}
+
+VERSION="$(read_version)"
 URL="$(parse_field url)"
 EXPECTED_SHA="$(parse_field sha256)"
 EXPECTED_SIZE="$(parse_field size)"
+
+# Implicit-default fallback: if the user didn't ask for a specific channel
+# and the default (stable) has no entry for this platform, try beta before
+# bailing. Keeps `curl … | bash` working in early-stage projects that ship
+# only betas. See the WORKSHOP_CHANNEL_EXPLICIT comment block above.
+if [ -z "$URL" ] || [ -z "$EXPECTED_SHA" ] || [ -z "$EXPECTED_SIZE" ]; then
+  if [ "$WORKSHOP_CHANNEL_EXPLICIT" = "0" ] && [ "$WORKSHOP_CHANNEL" = "stable" ]; then
+    echo "[install] no stable release published yet — falling back to beta channel"
+    WORKSHOP_CHANNEL=beta
+    VERSION="$(read_version)"
+    URL="$(parse_field url)"
+    EXPECTED_SHA="$(parse_field sha256)"
+    EXPECTED_SIZE="$(parse_field size)"
+  fi
+fi
 
 if [ -z "$URL" ] || [ -z "$EXPECTED_SHA" ] || [ -z "$EXPECTED_SIZE" ]; then
   echo "[install] manifest missing entry for channel=$WORKSHOP_CHANNEL platform=$PLATFORM" >&2

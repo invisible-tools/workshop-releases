@@ -1,0 +1,16 @@
+{
+  "name": "workshop",
+  "version": "0.1.0-beta1",
+  "description": "Local-first AI agent trace debugger. Your coding agent reads, annotates, and replays traces with code awareness.",
+  "author": {
+    "name": "Raindrop AI"
+  },
+  "homepage": "https://raindrop.ai",
+  "license": "MIT",
+  "keywords": [
+    "tracing",
+    "debugging",
+    "ai-agents",
+    "raindrop"
+  ]
+}

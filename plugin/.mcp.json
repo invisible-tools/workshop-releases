@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "workshop": {
+      "command": "${HOME}/.workshop/bin/workshop",
+      "args": ["mcp"]
+    }
+  }
+}
