@@ -18,7 +18,11 @@
 set -euo pipefail
 
 WORKSHOP_CHANNEL="${WORKSHOP_CHANNEL:-stable}"
-WORKSHOP_MANIFEST_URL="${WORKSHOP_MANIFEST_URL:-https://workshop.dev/latest.json}"
+# Manifest URL: served from main of the releases repo via raw.githubusercontent.
+# release.yml commits a fresh latest.json there on every release, so this URL
+# always works regardless of channel/prerelease semantics. When we own
+# workshop.dev, swap this default to https://workshop.dev/latest.json.
+WORKSHOP_MANIFEST_URL="${WORKSHOP_MANIFEST_URL:-https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/latest.json}"
 WORKSHOP_INSTALL_DIR="${WORKSHOP_INSTALL_DIR:-$HOME/.workshop/bin}"
 
 while [ $# -gt 0 ]; do
