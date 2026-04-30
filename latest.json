@@ -5,28 +5,28 @@
     "platforms": {
       "darwin-arm64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.0.3/raindrop-bun-darwin-arm64",
-        "sha256": "b6dff598c85f236908c9ca575decb15f85c96066d5a07a71bd60482608f4cf5d",
+        "sha256": "17eb0735d6aed3d4d0efa2894dc49767222deb9b294f16cfdb1a64f9bf774378",
         "size": 84702496
       },
       "darwin-x64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.0.3/raindrop-bun-darwin-x64",
-        "sha256": "7fbd67932ed9a5f96a386fe667a921bc8886bcbe7af26ed7bca31e68c5ea2d2d",
+        "sha256": "05f0c8791af37c480942847cfb8fc5917b1ed95d86c0ee7954be569a87b34f51",
         "size": 89903248
       },
       "linux-x64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.0.3/raindrop-bun-linux-x64",
-        "sha256": "2e1a532f5a1de89cf712687dab3bf2e8bc04a81b09f52eae50f5ea4f78a3a832",
+        "sha256": "7406fa6ff5a713f027078ae628c26e001d407bc804b39d56a8906baa7269b02e",
         "size": 123291968
       },
       "linux-arm64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.0.3/raindrop-bun-linux-arm64",
-        "sha256": "2ddadee661ee332f2e68cb76f120600ed4eb8667e6c2c2d1042a1435bf347ac0",
+        "sha256": "04c5500ae0d281b8db40c57b21881063c75a35ad2ca60769f4019003070f7b6a",
         "size": 122816832
       },
       "windows-x64": {
         "url": "https://github.com/invisible-tools/workshop-releases/releases/download/v0.0.3/raindrop-bun-windows-x64.exe",
-        "sha256": "d96a649dd81ce9c82a707c1a22789eed9c748e07c8e516c4856f538b693a0884",
-        "size": 139120128
+        "sha256": "13b95a9736aa19ab10b9851f8e40570e40034c021a3daff64dc32b07ae0e61d1",
+        "size": 139120640
       }
     }
   },
