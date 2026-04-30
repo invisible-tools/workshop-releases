@@ -2,11 +2,13 @@
 # install.sh — installs Workshop into ~/.workshop/bin/workshop.
 #
 # Pulled by users via:
-#   curl -fsSL https://workshop.dev/install.sh | bash
-#   curl -fsSL https://workshop.dev/install.sh | bash -s -- --channel=beta
+#   curl -fsSL https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/install.sh | bash -s -- --channel=beta
+# (Once we own workshop.dev, both URLs above will move to https://workshop.dev/install.sh.)
 #
 # Design notes (matches docs/specs/2026-04-29-packaging-design.md):
-#   - Reads the manifest from $WORKSHOP_MANIFEST_URL (default workshop.dev/latest.json)
+#   - Reads the manifest from $WORKSHOP_MANIFEST_URL
+#     (default: raw.githubusercontent.com/invisible-tools/workshop-releases/main/latest.json)
 #   - Picks the entry for $WORKSHOP_CHANNEL (default stable)
 #   - Downloads the platform-appropriate binary to a temp file
 #   - Verifies sha256 against the manifest
@@ -37,7 +39,8 @@ Usage: install.sh [--channel=stable|beta] [--manifest=URL] [--install-dir=DIR]
 
 Environment overrides:
   WORKSHOP_CHANNEL         stable | beta            (default: stable)
-  WORKSHOP_MANIFEST_URL    URL of latest.json       (default: https://workshop.dev/latest.json)
+  WORKSHOP_MANIFEST_URL    URL of latest.json
+                           (default: https://raw.githubusercontent.com/invisible-tools/workshop-releases/main/latest.json)
   WORKSHOP_INSTALL_DIR     install dir              (default: ~/.workshop/bin)
 USAGE
       exit 0
@@ -178,17 +181,36 @@ chmod +x "$DEST"
 
 echo "[install] installed: $DEST"
 
-# ── Path hint ────────────────────────────────────────────────
+# ── Next steps ───────────────────────────────────────────────
+# Pick the bare command if it's already on PATH, else the full path,
+# so copy-paste works either way.
+case ":$PATH:" in
+  *":$WORKSHOP_INSTALL_DIR:"*) CMD="workshop" ;;
+  *) CMD="$DEST" ;;
+esac
+
+echo ""
+echo "  Workshop $VERSION is installed."
+echo ""
+echo "  Start the daemon (runs in the background):"
+echo "      $CMD start"
+echo ""
+echo "  Then open the UI:"
+echo "      http://localhost:5899"
+echo ""
+echo "  Other commands:"
+echo "      $CMD status   # check whether it's running"
+echo "      $CMD stop     # stop the daemon"
+echo ""
+
+# Path hint goes last so it doesn't bury the actual call-to-action.
 case ":$PATH:" in
   *":$WORKSHOP_INSTALL_DIR:"*) ;;
   *)
     SHELL_NAME="$(basename "${SHELL:-bash}")"
     HINT="export PATH=\"$WORKSHOP_INSTALL_DIR:\$PATH\""
+    echo "  To use 'workshop' as a bare command, add this to your ~/.${SHELL_NAME}rc:"
+    echo "      $HINT"
     echo ""
-    echo "Add this to your ~/.${SHELL_NAME}rc to use 'workshop' from anywhere:"
-    echo "  $HINT"
     ;;
 esac
-
-echo ""
-echo "Try it:  $DEST status"
